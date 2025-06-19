@@ -1,4 +1,3 @@
-# uploader_main.py
 import os
 import shutil
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
@@ -10,10 +9,10 @@ BASE_STORAGE_PATH = "/runpod-volume/datasets"
 
 app = FastAPI()
 
-# Configure CORS to allow requests from your website
+# IMPORTANT: Configure CORS to allow requests from your website
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://your-mly-domain.com"], # IMPORTANT: Change this to your actual frontend URL
+    allow_origins=["https://mly.thiratpy.in.th", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,14 +25,13 @@ async def upload_image(
     file: UploadFile = File(...)
 ):
     """
-    This endpoint receives a single image and saves it to the
-    RunPod Network Volume in a structured path.
+    Receives a single image and saves it to the RunPod Network Volume.
     """
     try:
         # Sanitize class_name to prevent directory traversal issues
         safe_class_name = os.path.basename(class_name)
         
-        # Construct the full path
+        # Construct the full path where the file will be saved
         target_dir = os.path.join(BASE_STORAGE_PATH, project_id, safe_class_name)
         
         # Create the directories if they don't exist
@@ -41,7 +39,7 @@ async def upload_image(
         
         file_path = os.path.join(target_dir, file.filename)
         
-        # Write the file to the network storage
+        # Write the file chunk by chunk to the network storage
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
             
